@@ -1,0 +1,48 @@
+import 'package:flutter/material.dart';
+import 'package:langchain/langchain.dart';
+import 'package:langchain_chroma/langchain_chroma.dart';
+import 'package:langchain_ollama/langchain_ollama.dart';
+import 'package:scott_stoll_rfw_talk/app/app.dart';
+
+// SECTION: Retriever for RAG.
+/// Provides functionality for processing the prompt and retrieving the response.
+class LlmRetriever {
+
+  Future <String> processPrompt({required BuildContext context, required String prompt}) async {
+    String responseFromLLM = '';
+    final Chroma vectorStore = App.vectorStoreOf(context);
+    final retriever = vectorStore.asRetriever();
+    final setupAndRetrieval = Runnable.fromMap<String>({
+      'context': retriever.pipe(
+        Runnable.mapInput((docs) => docs.map((d) => d.pageContent).join('\n')),
+      ),
+      'question': Runnable.passthrough(),
+    });
+
+    final promptTemplate = ChatPromptTemplate.fromTemplates(const [
+      (
+      ChatMessageType.system,
+      'Answer the question based on only the following context:\n{context}'
+      ),
+      (ChatMessageType.human, '\n{question}'),
+    ]);
+    // SECTION LLM.
+    final llm = ChatOllama(
+      // URL of your Ollama llm.
+      baseUrl: 'http://localhost:11434/api',
+      defaultOptions: const ChatOllamaOptions(
+        temperature: 0.1,
+        // Model is optional, could be llama3, among others. If null, default is llama3.
+        model: 'llama3',
+      ),
+    );
+    // SECTION: LCEL & Output.
+    const outputParser = StringOutputParser<ChatResult>();
+    final chain = setupAndRetrieval.pipe(promptTemplate).pipe(llm).pipe(outputParser);
+    final result = chain.stream(prompt);
+    await for (var text in result) {
+      responseFromLLM += text;
+    }
+     return responseFromLLM;
+  }
+}

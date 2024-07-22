@@ -1,0 +1,3 @@
+class CurrentWidget{
+  String widget = '';
+}

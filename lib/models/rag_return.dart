@@ -1,0 +1,3 @@
+class RagReturn {
+  String returnedValue = '';
+}
