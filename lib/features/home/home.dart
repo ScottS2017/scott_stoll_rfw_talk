@@ -4,6 +4,7 @@ import 'package:scott_stoll_rfw_talk/app/app.dart';
 import 'package:scott_stoll_rfw_talk/backend/retriever.dart';
 import 'package:scott_stoll_rfw_talk/backend/text_splitter.dart';
 import 'package:scott_stoll_rfw_talk/data/local_test_documents.dart';
+import 'package:scott_stoll_rfw_talk/features/experimental_screen/experiemental_screen.dart';
 import 'package:scott_stoll_rfw_talk/models/rag_return.dart';
 
 class Home extends StatefulWidget {
@@ -14,10 +15,9 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-
   final _promptController = TextEditingController();
 
-  Future <void> onSubmit({required BuildContext context, required String prompt}) async {
+  Future<void> onSubmit({required BuildContext context, required String prompt}) async {
     String result = '';
     final Splitter splitter = App.splitterOf(context);
     final LlmRetriever retriever = App.retrieverOf(context);
@@ -56,7 +56,7 @@ class _HomeState extends State<Home> {
               ElevatedButton(
                 onPressed: () {
                   ragReturn.returnedValue = '';
-                     onSubmit(context: context, prompt: _promptController.text);
+                  onSubmit(context: context, prompt: _promptController.text);
                   _promptController.clear();
                 },
                 child: const Text('Submit Query'),
@@ -95,6 +95,20 @@ class _HomeState extends State<Home> {
                       vectorStore.addDocuments(documents: LocalTestDocuments.documents);
                     },
                     child: const Text('Add Documents'),
+                  ),
+                  const SizedBox(
+                    width: 32.0,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ExperimentalScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text('Experimental Screen'),
                   ),
                 ],
               ),
