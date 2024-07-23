@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:langchain/langchain.dart';
 import 'package:langchain_chroma/langchain_chroma.dart';
 import 'package:langchain_openai/langchain_openai.dart';
+import 'package:scott_stoll_rfw_talk/backend/gemini_service.dart';
 import 'package:scott_stoll_rfw_talk/backend/retriever.dart';
 import 'package:scott_stoll_rfw_talk/backend/text_splitter.dart';
 import 'package:scott_stoll_rfw_talk/backend/vector_store_service.dart';
@@ -9,6 +10,7 @@ import 'package:scott_stoll_rfw_talk/data/api_keys.dart';
 import 'package:scott_stoll_rfw_talk/features/home/home.dart';
 import 'package:scott_stoll_rfw_talk/models/current_widget.dart';
 import 'package:scott_stoll_rfw_talk/models/history.dart';
+import 'package:scott_stoll_rfw_talk/models/local_chat.dart';
 import 'package:scott_stoll_rfw_talk/models/model.dart';
 import 'package:scott_stoll_rfw_talk/models/rag_return.dart';
 
@@ -69,6 +71,20 @@ class App extends StatefulWidget {
     return state._vectorStoreServiceOf;
   }
 
+  /// A method that returns a singleton [LocalChat] object, providing it to
+  /// the entire app via the context.
+  static LocalChat localChatOf(BuildContext context) {
+    final AppState state = context.findAncestorStateOfType<AppState>()!;
+    return state._providedLocalChat;
+  }
+
+  /// A method that returns a singleton [GeminiService] object, providing it to
+  /// the entire app via the context.
+  static GeminiService geminiServiceOf(BuildContext context) {
+    final AppState state = context.findAncestorStateOfType<AppState>()!;
+    return state._providedGeminiServiceOf;
+  }
+
   @override
   AppState createState() => AppState();
 }
@@ -101,6 +117,15 @@ class AppState extends State<App> {
   /// Singleton instance of RagReturn used throughout the app.
   late VectorStoreService _vectorStoreServiceOf;
 
+  /// The singleton [LocalChat] object returned by
+  /// [widget.localChatOf].
+  late LocalChat _providedLocalChat;
+
+  /// The singleton [GeminiService] object returned by
+  /// [widget.geminiServiceOf].
+  late GeminiService _providedGeminiServiceOf;
+
+
   @override
   void initState() {
     super.initState();
@@ -118,6 +143,8 @@ class AppState extends State<App> {
     _splitterOf = Splitter();
     _retrieverOf = LlmRetriever();
     _vectorStoreServiceOf = VectorStoreService();
+    _providedGeminiServiceOf = GeminiService();
+    _providedLocalChat = LocalChat();
   }
 
   @override

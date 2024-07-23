@@ -4,12 +4,16 @@ import 'package:langchain_chroma/langchain_chroma.dart';
 import 'package:langchain_ollama/langchain_ollama.dart';
 import 'package:scott_stoll_rfw_talk/app/app.dart';
 
-// SECTION: Retriever for RAG.
-/// Provides functionality for processing the prompt and retrieving the response.
+// SECTION: Class is the Retriever for RAG.
+/// Provides functionality for processing the prompt and retrieving the
+/// response.
 class LlmRetriever {
+  // FIXME convert the setup to a singleton and provide it via context.
 
+  /// Prepares the prompt for processing sends it to the LLM, and gets the
+  /// response.
   Future <String> processPrompt({required BuildContext context, required String prompt}) async {
-    String responseFromLLM = '';
+    // SECTION: Vector Store.
     final Chroma vectorStore = App.vectorStoreOf(context);
     final retriever = vectorStore.asRetriever();
     final setupAndRetrieval = Runnable.fromMap<String>({
@@ -18,7 +22,7 @@ class LlmRetriever {
       ),
       'question': Runnable.passthrough(),
     });
-
+    // SECTION: Prompt Template.
     final promptTemplate = ChatPromptTemplate.fromTemplates(const [
       (
       ChatMessageType.system,
@@ -27,6 +31,8 @@ class LlmRetriever {
       (ChatMessageType.human, '\n{question}'),
     ]);
     // SECTION LLM.
+    String responseFromLLM = '';
+    // FIXME make the llm a singleton and provide via the context.
     final llm = ChatOllama(
       // URL of your Ollama llm.
       baseUrl: 'http://localhost:11434/api',
