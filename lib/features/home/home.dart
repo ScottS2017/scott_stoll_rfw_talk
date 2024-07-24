@@ -22,9 +22,9 @@ class _HomeState extends State<Home> {
   late final Splitter _splitter;
   late final LlmRetriever _retriever;
 
-  Future<void> onSubmit({required BuildContext context, required String prompt}) async {
+  Future<void> _onSubmit({required BuildContext context, required String prompt}) async {
     String result = '';
-    await _splitter.splitTextAndAddToDb(context: context, document: prompt);
+    await _splitter.splitTextAndAddToDb(vectorStore: _vectorStore, document: prompt,);
     result = await _retriever.processPrompt(vectorStore: _vectorStore, prompt: prompt);
     setState(() {
       _ragReturn.returnedValue = result;
@@ -57,7 +57,7 @@ class _HomeState extends State<Home> {
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 32.0),
                 child: TextField(
-                  onSubmitted: (_) => onSubmit(context: context, prompt: _promptController.text),
+                  onSubmitted: (_) => _onSubmit(context: context, prompt: _promptController.text),
                   controller: _promptController,
                   maxLines: 10,
                 ),
@@ -65,7 +65,7 @@ class _HomeState extends State<Home> {
               ElevatedButton(
                 onPressed: () {
                   _ragReturn.returnedValue = '';
-                  onSubmit(context: context, prompt: _promptController.text);
+                  _onSubmit(context: context, prompt: _promptController.text);
                   _promptController.clear();
                 },
                 child: const Text('Submit Query'),

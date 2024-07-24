@@ -3,6 +3,7 @@ import 'package:scott_stoll_rfw_talk/data/initial_widget.dart';
 import 'package:scott_stoll_rfw_talk/models/local_chat.dart';
 import 'package:google_generative_ai/google_generative_ai.dart';
 import 'package:scott_stoll_rfw_talk/data/api_keys.dart';
+import 'package:scott_stoll_rfw_talk/models/rag_return.dart';
 
 /// Handles communication with Gemini and processes results.
 class GeminiService {
@@ -40,14 +41,14 @@ class GeminiService {
   ValueNotifier<String> get rfwString => _rfwString;
 
   /// Processes submission.
-  Future<void> handleSubmit({
+  Future<String?> handleSubmit({
     required String userInput,
     required LocalChat gemini,
     required GeminiService geminiService,
   }) {
     awaitingResponse = true;
-    Future<void>? result;
-    result = processSend(gemini: gemini, prompt: userInput, geminiService: geminiService);
+    Future<String?> result;
+    result = processSend(gemini: gemini, prompt: userInput, geminiService: geminiService) as Future<String?>;
     awaitingResponse = false;
     return result;
   }

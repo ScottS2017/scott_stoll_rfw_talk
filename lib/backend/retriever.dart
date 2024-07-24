@@ -31,14 +31,13 @@ class LlmRetriever {
     ]);
     // SECTION LLM.
     String responseFromLLM = '';
-    // FIXME make the llm a singleton and provide via the context.
     final llm = ChatOllama(
       // URL of your Ollama llm.
       baseUrl: 'http://localhost:11434/api',
       defaultOptions: const ChatOllamaOptions(
         temperature: 0.1,
         // Model is optional, could be llama3, among others. If null, default is llama3.
-        model: 'llama3',
+        model: 'gemma2:9b',
       ),
     );
     // SECTION: LCEL & Output.

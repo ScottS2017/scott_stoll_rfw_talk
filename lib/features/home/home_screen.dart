@@ -1,9 +1,12 @@
 import 'package:langchain_chroma/langchain_chroma.dart';
 import 'package:scott_stoll_rfw_talk/backend/gemini_service.dart';
 import 'package:scott_stoll_rfw_talk/app/app.dart';
+import 'package:scott_stoll_rfw_talk/backend/retriever.dart';
+import 'package:scott_stoll_rfw_talk/backend/text_splitter.dart';
 import 'package:scott_stoll_rfw_talk/features/experimental_screen/experiemental_screen.dart';
 import 'package:scott_stoll_rfw_talk/data/local_test_documents.dart';
 import 'package:scott_stoll_rfw_talk/models/local_chat.dart';
+import 'package:scott_stoll_rfw_talk/models/rag_return.dart';
 import 'package:scott_stoll_rfw_talk/utils/spacing_constants.dart';
 import 'package:rfw/formats.dart' show parseLibraryFile;
 import 'package:rfw/rfw.dart';
@@ -56,9 +59,13 @@ class _HomeScreenState extends State<HomeScreen> {
   static const LibraryName remoteLibraryName = LibraryName(<String>['remote']);
 
   late final Chroma _vectorStore;
+  final _promptController = TextEditingController();
+  late final RagReturn _ragReturn;
+  late final Splitter _splitter;
+  late final LlmRetriever _retriever;
 
   // Sends the input to [GeminiService] and updates [_futureResponse].
-  void _handleSubmit(String input) {
+  void _geminiRagSubmit(String input) {
     setState(() {
       // Process the prompt.
       _futureResponse = _geminiService.handleSubmit(
@@ -69,7 +76,19 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  void _undoToLastWidget(){
+  Future<void> _llama3RfwSubmit({required String prompt}) async {
+    String result = '';
+    await _splitter.splitTextAndAddToDb(
+      vectorStore: _vectorStore,
+      document: prompt,
+    );
+    result = await _retriever.processPrompt(vectorStore: _vectorStore, prompt: prompt);
+    setState(() {
+      _ragReturn.returnedValue = result;
+    });
+  }
+
+  void _undoToLastWidget() {
     setState(() {
       // Process the prompt.
       _futureResponse = _geminiService.handleSubmit(
@@ -107,6 +126,9 @@ class _HomeScreenState extends State<HomeScreen> {
     _geminiService = App.geminiServiceOf(context);
     _gemini.initChat();
     _vectorStore = App.vectorStoreOf(context);
+    _ragReturn = App.regReturnOf(context);
+    _splitter = App.splitterOf(context);
+    _retriever = App.retrieverOf(context);
   }
 
   void rfwTestPrint(Map arguments) {
@@ -137,7 +159,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       focusNode: _inputFieldFocusNode,
                       onSubmitted: (_) {
                         if (_geminiService.awaitingResponse) return;
-                        _handleSubmit(_inputController.text);
+                        _geminiRagSubmit(_inputController.text);
+                        _llama3RfwSubmit(prompt: _inputController.text);
                       },
                       decoration: const InputDecoration(
                         border: OutlineInputBorder(
@@ -153,6 +176,39 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   horizontalMargin16,
                   // SECTION: Undo Button.
+                  ElevatedButton(
+                    onPressed: () {
+                      _llama3RfwSubmit(prompt: _inputController.text);
+                    },
+                    child: const SizedBox(
+                      height: 50.0,
+                      width: 80.0,
+                      child: Center(
+                        child: Text(
+                          'Ollama',
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8.0),
+                  ElevatedButton(
+                    onPressed: () {
+                      if (_geminiService.awaitingResponse) return;
+                      _geminiRagSubmit(_inputController.text);
+                    },
+                    child: const SizedBox(
+                      height: 50.0,
+                      width: 80.0,
+                      child: Center(
+                        child: Text(
+                          'Gemini',
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8.0),
                   ElevatedButton(
                     onPressed: () {
                       _undoToLastWidget();
@@ -204,7 +260,9 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     }),
               ),
-              const SizedBox(height: 16.0,),
+              const SizedBox(
+                height: 16.0,
+              ),
               FutureBuilder<void>(
                 future: _futureResponse,
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -259,7 +317,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     // TODO: Replace placeholder with something permanent.
                     return Container(
                       width: double.infinity,
-                      height: 300.0,
+                      height: 100.0,
                       decoration: BoxDecoration(
                         border: Border.all(
                           width: 1,
@@ -271,7 +329,29 @@ class _HomeScreenState extends State<HomeScreen> {
                   }
                 },
               ),
-              const SizedBox(height: 16.0,),
+              const SizedBox(
+                height: 16.0,
+              ),
+              SizedBox(
+                width: 600.0,
+                height: 200.0,
+                child: ColoredBox(
+                  color: Colors.grey[200]!,
+                  child: Padding(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 32.0,
+                      vertical: 32.0,
+                    ),
+                    // Returned text from the LLM (OpenAI in this demo).
+                    child: SingleChildScrollView(
+                      child: Text(_ragReturn.returnedValue),
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 16.0,
+              ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

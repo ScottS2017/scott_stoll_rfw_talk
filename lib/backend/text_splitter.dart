@@ -15,8 +15,7 @@ class Splitter {
   );
 
   /// Splits the text into chunks and sends them to the Vector DB.
-  Future <void> splitTextAndAddToDb({required BuildContext context, required String document}) async {
-    final Chroma vectorStore = App.vectorStoreOf(context);
+  Future <void> splitTextAndAddToDb({required Chroma vectorStore, required String document}) async {
     final splitLists = splitter.splitText(document);
     final ids = splitLists
         .map(
