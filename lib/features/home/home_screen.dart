@@ -1,5 +1,8 @@
+import 'package:langchain_chroma/langchain_chroma.dart';
 import 'package:scott_stoll_rfw_talk/backend/gemini_service.dart';
 import 'package:scott_stoll_rfw_talk/app/app.dart';
+import 'package:scott_stoll_rfw_talk/features/experimental_screen/experiemental_screen.dart';
+import 'package:scott_stoll_rfw_talk/data/local_test_documents.dart';
 import 'package:scott_stoll_rfw_talk/models/local_chat.dart';
 import 'package:scott_stoll_rfw_talk/utils/spacing_constants.dart';
 import 'package:rfw/formats.dart' show parseLibraryFile;
@@ -52,6 +55,8 @@ class _HomeScreenState extends State<HomeScreen> {
   /// The widget library of local custom widgets.
   static const LibraryName remoteLibraryName = LibraryName(<String>['remote']);
 
+  late final Chroma _vectorStore;
+
   // Sends the input to [GeminiService] and updates [_futureResponse].
   void _handleSubmit(String input) {
     setState(() {
@@ -101,6 +106,7 @@ class _HomeScreenState extends State<HomeScreen> {
     _gemini = App.localChatOf(context);
     _geminiService = App.geminiServiceOf(context);
     _gemini.initChat();
+    _vectorStore = App.vectorStoreOf(context);
   }
 
   void rfwTestPrint(Map arguments) {
@@ -198,7 +204,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     }),
               ),
-              const SizedBox(height: 64.0,),
+              const SizedBox(height: 16.0,),
               FutureBuilder<void>(
                 future: _futureResponse,
                 builder: (BuildContext context, AsyncSnapshot snapshot) {
@@ -264,6 +270,55 @@ class _HomeScreenState extends State<HomeScreen> {
                     );
                   }
                 },
+              ),
+              const SizedBox(height: 16.0,),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  ElevatedButton(
+                    onPressed: () {
+                      _vectorStore.delete(ids: ['1', '2']);
+                    },
+                    child: const Text('Delete DB Entries'),
+                  ),
+                  const SizedBox(
+                    width: 32.0,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      _vectorStore.addDocuments(documents: LocalTestDocuments.documents);
+                    },
+                    child: const Text('Add Documents'),
+                  ),
+                  const SizedBox(
+                    width: 32.0,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const ExperimentalScreen(),
+                        ),
+                      );
+                    },
+                    child: const Text('Experimental Screen'),
+                  ),
+                  const SizedBox(
+                    width: 32.0,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HomeScreen(title: 'Talk Home Screen'),
+                        ),
+                      );
+                    },
+                    child: const Text('Talk Home Screen'),
+                  ),
+                ],
               ),
             ],
           ),

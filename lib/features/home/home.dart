@@ -17,29 +17,37 @@ class Home extends StatefulWidget {
 
 class _HomeState extends State<Home> {
   final _promptController = TextEditingController();
+  late final RagReturn _ragReturn;
+  late final Chroma _vectorStore;
+  late final Splitter _splitter;
+  late final LlmRetriever _retriever;
 
   Future<void> onSubmit({required BuildContext context, required String prompt}) async {
     String result = '';
-    final Splitter splitter = App.splitterOf(context);
-    final LlmRetriever retriever = App.retrieverOf(context);
-    final RagReturn ragReturn = App.regReturnOf(context);
-    await splitter.splitTextAndAddToDb(context: context, document: prompt);
-    // There is nothing happening in processPrompt() that would be a problem across an async gap.
-    // ignore: use_build_context_synchronously
-    result = await retriever.processPrompt(context: context, prompt: prompt);
+    await _splitter.splitTextAndAddToDb(context: context, document: prompt);
+    result = await _retriever.processPrompt(vectorStore: _vectorStore, prompt: prompt);
     setState(() {
-      ragReturn.returnedValue = result;
+      _ragReturn.returnedValue = result;
     });
   }
 
   @override
+  void initState() {
+    super.initState();
+    _ragReturn = App.regReturnOf(context);
+    _vectorStore = App.vectorStoreOf(context);
+    _splitter = App.splitterOf(context);
+    _retriever = App.retrieverOf(context);
+  }
+
+  @override
   Widget build(BuildContext context) {
-    final RagReturn ragReturn = App.regReturnOf(context);
-    final Chroma vectorStore = App.vectorStoreOf(context);
+
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('Combined Home Screen'),
+          backgroundColor: Colors.green,
+          title: const Text('New Home Screen'),
         ),
         body: Center(
           child: Column(
@@ -56,7 +64,7 @@ class _HomeState extends State<Home> {
               ),
               ElevatedButton(
                 onPressed: () {
-                  ragReturn.returnedValue = '';
+                  _ragReturn.returnedValue = '';
                   onSubmit(context: context, prompt: _promptController.text);
                   _promptController.clear();
                 },
@@ -74,7 +82,7 @@ class _HomeState extends State<Home> {
                     ),
                     // Returned text from the LLM (OpenAI in this demo).
                     child: SingleChildScrollView(
-                      child: Text(ragReturn.returnedValue),
+                      child: Text(_ragReturn.returnedValue),
                     ),
                   ),
                 ),
@@ -84,7 +92,7 @@ class _HomeState extends State<Home> {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      vectorStore.delete(ids: ['1', '2']);
+                      _vectorStore.delete(ids: ['1', '2']);
                     },
                     child: const Text('Delete DB Entries'),
                   ),
@@ -93,7 +101,7 @@ class _HomeState extends State<Home> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      vectorStore.addDocuments(documents: LocalTestDocuments.documents);
+                      _vectorStore.addDocuments(documents: LocalTestDocuments.documents);
                     },
                     child: const Text('Add Documents'),
                   ),
@@ -119,11 +127,11 @@ class _HomeState extends State<Home> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const HomeScreen(title: 'RFW Home Screen'),
+                          builder: (context) => const HomeScreen(title: 'Talk Home Screen'),
                         ),
                       );
                     },
-                    child: const Text('RFW Home Screen'),
+                    child: const Text('Talk Home Screen'),
                   ),
                 ],
               ),

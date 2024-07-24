@@ -12,9 +12,8 @@ class LlmRetriever {
 
   /// Prepares the prompt for processing sends it to the LLM, and gets the
   /// response.
-  Future <String> processPrompt({required BuildContext context, required String prompt}) async {
-    // SECTION: Vector Store.
-    final Chroma vectorStore = App.vectorStoreOf(context);
+  Future <String> processPrompt({required Chroma vectorStore, required String prompt}) async {
+    // SECTION: Retriever.
     final retriever = vectorStore.asRetriever();
     final setupAndRetrieval = Runnable.fromMap<String>({
       'context': retriever.pipe(
