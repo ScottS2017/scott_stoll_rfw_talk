@@ -5,6 +5,7 @@ import 'package:scott_stoll_rfw_talk/backend/retriever.dart';
 import 'package:scott_stoll_rfw_talk/backend/text_splitter.dart';
 import 'package:scott_stoll_rfw_talk/data/local_test_documents.dart';
 import 'package:scott_stoll_rfw_talk/features/experimental_screen/experiemental_screen.dart';
+import 'package:scott_stoll_rfw_talk/features/home/home_screen.dart';
 import 'package:scott_stoll_rfw_talk/models/rag_return.dart';
 
 class Home extends StatefulWidget {
@@ -38,7 +39,7 @@ class _HomeState extends State<Home> {
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
-          title: const Text('P2'),
+          title: const Text('Combined Home Screen'),
         ),
         body: Center(
           child: Column(
@@ -109,6 +110,20 @@ class _HomeState extends State<Home> {
                       );
                     },
                     child: const Text('Experimental Screen'),
+                  ),
+                  const SizedBox(
+                    width: 32.0,
+                  ),
+                  ElevatedButton(
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const HomeScreen(title: 'RFW Home Screen'),
+                        ),
+                      );
+                    },
+                    child: const Text('RFW Home Screen'),
                   ),
                 ],
               ),

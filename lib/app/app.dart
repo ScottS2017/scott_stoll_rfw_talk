@@ -138,7 +138,7 @@ class AppState extends State<App> {
       // The embeddings that go in the Vector Database.
       embeddings: _openAIEmbeddingsOf,
       // The URI of the the Vector Database.
-      baseUrl: 'http://localhost:44565',
+      baseUrl: 'http://localhost:44556',
     );
     _splitterOf = Splitter();
     _retrieverOf = LlmRetriever();

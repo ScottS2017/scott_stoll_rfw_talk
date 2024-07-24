@@ -21,7 +21,7 @@ class GeminiService {
   /// An instance of the gemini-pro model.
   final model = GenerativeModel(
     model: 'gemini-pro',
-    apiKey: openAiApiKey,
+    apiKey: geminiApiKey,
     generationConfig: GenerationConfig(
       // Not used.
       // stopSequences: ["red"],
