@@ -24,15 +24,4 @@ class Splitter {
     List<Document> docs = splitter.splitDocuments(docObjects);
     await vectorStore.addDocuments(documents: docs);
   }
-
-  Future <void> oldSplitTextAndAddToDb({required Chroma vectorStore, required String documentToSplit}) async {
-    final splitLists = splitter.splitText(documentToSplit);
-    final ids = splitLists
-        .map(
-          (e) => const Uuid().v4(),
-    )
-        .toList();
-    List<Document> docs = splitter.createDocuments(splitLists, ids: ids);
-    await vectorStore.addDocuments(documents: docs);
-  }
 }
