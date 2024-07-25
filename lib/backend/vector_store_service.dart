@@ -13,7 +13,7 @@ class VectorStoreService {
     final Chroma vectorStore = App.vectorStoreOf(context);
     // Add documents to the vector store
     await vectorStore.addDocuments(
-      documents: LocalTestDocuments.documents,
+      documents: Doc.documents,
     );
   }
 

@@ -78,10 +78,6 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _llama3RfwSubmit({required String prompt}) async {
     String result = '';
-    await _splitter.splitTextAndAddToDb(
-      vectorStore: _vectorStore,
-      document: prompt,
-    );
     result = await _retriever.processPrompt(vectorStore: _vectorStore, prompt: prompt);
     setState(() {
       _ragReturn.returnedValue = result;
@@ -342,7 +338,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       horizontal: 32.0,
                       vertical: 32.0,
                     ),
-                    // Returned text from the LLM (OpenAI in this demo).
+                    // SECTION:  Returned text from the LLM (OpenAI in this demo).
                     child: SingleChildScrollView(
                       child: Text(_ragReturn.returnedValue),
                     ),
@@ -352,6 +348,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(
                 height: 16.0,
               ),
+              // SECTION: Bottom button row.
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -366,7 +363,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   ElevatedButton(
                     onPressed: () {
-                      _vectorStore.addDocuments(documents: LocalTestDocuments.documents);
+                      _vectorStore.addDocuments(documents: Doc.documents);
                     },
                     child: const Text('Add Documents'),
                   ),

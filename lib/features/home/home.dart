@@ -3,6 +3,7 @@ import 'package:langchain_chroma/langchain_chroma.dart';
 import 'package:scott_stoll_rfw_talk/app/app.dart';
 import 'package:scott_stoll_rfw_talk/backend/retriever.dart';
 import 'package:scott_stoll_rfw_talk/backend/text_splitter.dart';
+import 'package:scott_stoll_rfw_talk/data/doc_objects.dart';
 import 'package:scott_stoll_rfw_talk/data/local_test_documents.dart';
 import 'package:scott_stoll_rfw_talk/features/experimental_screen/experiemental_screen.dart';
 import 'package:scott_stoll_rfw_talk/features/home/home_screen.dart';
@@ -24,7 +25,6 @@ class _HomeState extends State<Home> {
 
   Future<void> _onSubmit({required BuildContext context, required String prompt}) async {
     String result = '';
-    await _splitter.splitTextAndAddToDb(vectorStore: _vectorStore, document: prompt,);
     result = await _retriever.processPrompt(vectorStore: _vectorStore, prompt: prompt);
     setState(() {
       _ragReturn.returnedValue = result;
@@ -42,7 +42,6 @@ class _HomeState extends State<Home> {
 
   @override
   Widget build(BuildContext context) {
-
     return MaterialApp(
       home: Scaffold(
         appBar: AppBar(
@@ -80,19 +79,24 @@ class _HomeState extends State<Home> {
                       horizontal: 32.0,
                       vertical: 32.0,
                     ),
-                    // Returned text from the LLM (OpenAI in this demo).
+                    // SECTION: Returned text from the LLM (OpenAI in this demo).
                     child: SingleChildScrollView(
                       child: Text(_ragReturn.returnedValue),
                     ),
                   ),
                 ),
               ),
+              // SECTION: Bottom button row.
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      _vectorStore.delete(ids: ['1', '2']);
+                      final docIds = <String>[];
+                      for(final(doc) in docObjects){
+                        docIds.add(doc.id!);
+                      }
+                      _vectorStore.delete(ids: docIds);
                     },
                     child: const Text('Delete DB Entries'),
                   ),
@@ -100,8 +104,10 @@ class _HomeState extends State<Home> {
                     width: 32.0,
                   ),
                   ElevatedButton(
-                    onPressed: () {
-                      _vectorStore.addDocuments(documents: LocalTestDocuments.documents);
+                    onPressed: () async {
+                      await _splitter.splitTextAndAddToDb(
+                        vectorStore: _vectorStore,
+                      );
                     },
                     child: const Text('Add Documents'),
                   ),
