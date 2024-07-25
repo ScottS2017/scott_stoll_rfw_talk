@@ -48,9 +48,9 @@ class App extends StatefulWidget {
   }
 
   /// Provides access to the RagReturn singleton.
-  static Chroma vectorStoreOf(BuildContext context) {
+  static Chroma databaseOf(BuildContext context) {
     final AppState state = context.findAncestorStateOfType<AppState>()!;
-    return state._vectorStoreOf;
+    return state._databaseOf;
   }
 
   /// Provides access to the Splitter singleton.
@@ -66,9 +66,9 @@ class App extends StatefulWidget {
   }
 
   /// Provides access to the LlmRetriever singleton.
-  static VectorStoreService vectorStoreServiceOf(BuildContext context) {
+  static DatabaseService databaseServiceOf(BuildContext context) {
     final AppState state = context.findAncestorStateOfType<AppState>()!;
-    return state._vectorStoreServiceOf;
+    return state._databaseServiceOf;
   }
 
   /// A method that returns a singleton [LocalChat] object, providing it to
@@ -106,7 +106,7 @@ class AppState extends State<App> {
   late OpenAIEmbeddings _openAIEmbeddingsOf;
 
   /// Singleton instance of RagReturn used throughout the app.
-  late Chroma _vectorStoreOf;
+  late Chroma _databaseOf;
 
   /// Singleton instance of RagReturn used throughout the app.
   late Splitter _splitterOf;
@@ -115,7 +115,7 @@ class AppState extends State<App> {
   late LlmRetriever _retrieverOf;
 
   /// Singleton instance of RagReturn used throughout the app.
-  late VectorStoreService _vectorStoreServiceOf;
+  late DatabaseService _databaseServiceOf;
 
   /// The singleton [LocalChat] object returned by
   /// [widget.localChatOf].
@@ -134,7 +134,7 @@ class AppState extends State<App> {
     _modelOf = Model();
     _ragReturnOf = RagReturn();
     _openAIEmbeddingsOf = OpenAIEmbeddings(apiKey: openAiApiKey);
-    _vectorStoreOf = Chroma(
+    _databaseOf = Chroma(
       // The embeddings that go in the Vector Database.
       embeddings: _openAIEmbeddingsOf,
       // The URI of the the Vector Database.
@@ -142,7 +142,7 @@ class AppState extends State<App> {
     );
     _splitterOf = Splitter();
     _retrieverOf = LlmRetriever();
-    _vectorStoreServiceOf = VectorStoreService();
+    _databaseServiceOf = DatabaseService();
     _providedGeminiServiceOf = GeminiService();
     _providedLocalChat = LocalChat();
   }

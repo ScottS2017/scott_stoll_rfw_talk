@@ -3,8 +3,9 @@ import 'package:scott_stoll_rfw_talk/backend/gemini_service.dart';
 import 'package:scott_stoll_rfw_talk/app/app.dart';
 import 'package:scott_stoll_rfw_talk/backend/retriever.dart';
 import 'package:scott_stoll_rfw_talk/backend/text_splitter.dart';
+import 'package:scott_stoll_rfw_talk/backend/vector_store_service.dart';
+import 'package:scott_stoll_rfw_talk/data/doc_objects.dart';
 import 'package:scott_stoll_rfw_talk/features/experimental_screen/experiemental_screen.dart';
-import 'package:scott_stoll_rfw_talk/data/local_test_documents.dart';
 import 'package:scott_stoll_rfw_talk/models/local_chat.dart';
 import 'package:scott_stoll_rfw_talk/models/rag_return.dart';
 import 'package:scott_stoll_rfw_talk/utils/spacing_constants.dart';
@@ -58,11 +59,12 @@ class _HomeScreenState extends State<HomeScreen> {
   /// The widget library of local custom widgets.
   static const LibraryName remoteLibraryName = LibraryName(<String>['remote']);
 
-  late final Chroma _vectorStore;
+  late final Chroma _database;
   final _promptController = TextEditingController();
   late final RagReturn _ragReturn;
   late final Splitter _splitter;
   late final LlmRetriever _retriever;
+  late final DatabaseService _databaseService;
 
   // Sends the input to [GeminiService] and updates [_futureResponse].
   void _geminiRagSubmit(String input) {
@@ -78,7 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _llama3RfwSubmit({required String prompt}) async {
     String result = '';
-    result = await _retriever.processPrompt(vectorStore: _vectorStore, prompt: prompt);
+    result = await _retriever.processPrompt(vectorStore: _database, prompt: prompt);
     setState(() {
       _ragReturn.returnedValue = result;
     });
@@ -121,10 +123,11 @@ class _HomeScreenState extends State<HomeScreen> {
     _gemini = App.localChatOf(context);
     _geminiService = App.geminiServiceOf(context);
     _gemini.initChat();
-    _vectorStore = App.vectorStoreOf(context);
+    _database = App.databaseOf(context);
     _ragReturn = App.regReturnOf(context);
     _splitter = App.splitterOf(context);
     _retriever = App.retrieverOf(context);
+    _databaseService= App.databaseServiceOf(context);
   }
 
   void rfwTestPrint(Map arguments) {
@@ -354,7 +357,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   ElevatedButton(
                     onPressed: () {
-                      _vectorStore.delete(ids: ['1', '2']);
+                      _database.delete(ids: ['1', '2']);
                     },
                     child: const Text('Delete DB Entries'),
                   ),
@@ -362,8 +365,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     width: 32.0,
                   ),
                   ElevatedButton(
-                    onPressed: () {
-                      _vectorStore.addDocuments(documents: Doc.documents);
+                    onPressed: () async {
+                      await _databaseService.addDocumentsToDatabase(
+                        database: _database,
+                        documents: docObjects,
+                      );
                     },
                     child: const Text('Add Documents'),
                   ),

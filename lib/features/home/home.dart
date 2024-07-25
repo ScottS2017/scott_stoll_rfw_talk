@@ -3,8 +3,8 @@ import 'package:langchain_chroma/langchain_chroma.dart';
 import 'package:scott_stoll_rfw_talk/app/app.dart';
 import 'package:scott_stoll_rfw_talk/backend/retriever.dart';
 import 'package:scott_stoll_rfw_talk/backend/text_splitter.dart';
+import 'package:scott_stoll_rfw_talk/backend/vector_store_service.dart';
 import 'package:scott_stoll_rfw_talk/data/doc_objects.dart';
-import 'package:scott_stoll_rfw_talk/data/local_test_documents.dart';
 import 'package:scott_stoll_rfw_talk/features/experimental_screen/experiemental_screen.dart';
 import 'package:scott_stoll_rfw_talk/features/home/home_screen.dart';
 import 'package:scott_stoll_rfw_talk/models/rag_return.dart';
@@ -19,13 +19,19 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   final _promptController = TextEditingController();
   late final RagReturn _ragReturn;
-  late final Chroma _vectorStore;
+  late final Chroma _database;
+  late final DatabaseService _databaseService;
   late final Splitter _splitter;
   late final LlmRetriever _retriever;
 
   Future<void> _onSubmit({required BuildContext context, required String prompt}) async {
     String result = '';
-    result = await _retriever.processPrompt(vectorStore: _vectorStore, prompt: prompt);
+    // FIXME does this call need to be here?
+    // await _splitter.splitTextAndAddToDb(
+    //   vectorStore: _vectorStore,
+    //   document: prompt,
+    // );
+    result = await _retriever.processPrompt(vectorStore: _database, prompt: prompt);
     setState(() {
       _ragReturn.returnedValue = result;
     });
@@ -35,7 +41,8 @@ class _HomeState extends State<Home> {
   void initState() {
     super.initState();
     _ragReturn = App.regReturnOf(context);
-    _vectorStore = App.vectorStoreOf(context);
+    _database = App.databaseOf(context);
+    _databaseService = App.databaseServiceOf(context);
     _splitter = App.splitterOf(context);
     _retriever = App.retrieverOf(context);
   }
@@ -96,7 +103,7 @@ class _HomeState extends State<Home> {
                       for(final(doc) in docObjects){
                         docIds.add(doc.id!);
                       }
-                      _vectorStore.delete(ids: docIds);
+                      _database.delete(ids: docIds);
                     },
                     child: const Text('Delete DB Entries'),
                   ),
@@ -105,8 +112,9 @@ class _HomeState extends State<Home> {
                   ),
                   ElevatedButton(
                     onPressed: () async {
-                      await _splitter.splitTextAndAddToDb(
-                        vectorStore: _vectorStore,
+                      await _databaseService.addDocumentsToDatabase(
+                        database: _database,
+                        documents: docObjects,
                       );
                     },
                     child: const Text('Add Documents'),
